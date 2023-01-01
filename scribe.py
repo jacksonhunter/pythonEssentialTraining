@@ -186,6 +186,7 @@ class TerminalScribe:
                     prompt = [self.jump([1, 20]), [self.right(i) for i in "Right!"]]
                 letter=self.answer.find(i, letter+1)
             self.used.add(i)
+            self.drawScore()
             self.jump([32, 14])
             used = [self.right(i) for i in self.used]
 
@@ -207,7 +208,7 @@ class TerminalScribe:
         gameboard = [self.right(i) for i in "_ _ _ _ _"]
         while self.gameOver() == (not True):
             self.takeInput()
-            self.drawScore()
+            
 
     def drawScore(self):
         heads = [[""], ["(ᵔᵕᵔ)"], ["(⊙.☉)"], ["(@_@)"], ["(ಥ⌣ಥ)" ], ["(✖╭╮✖)"] ]
@@ -217,7 +218,7 @@ class TerminalScribe:
         legL=False
         legR=False
         if self.count > 0:
-            head = [self.jump([9, 7]), [self.right(i) for i in heads[self.count][0]] ]
+            head = [self.jump([9, 7]), [self.right(i) for i in heads[self.count][0]], self.jump([10,6]), [self.right(i) for i in " : " ]]
         if self.count >=2 and not armL:
             armL = [self.jump([7, 7]), self.right("\\"), self.down(" "), [self.right(i) for i in "\__|"] ]
         if self.count >=3 and not armR:
