@@ -15,7 +15,7 @@ class Canvas:
         # This is a grid that contains data about where the 
         # TerminalScribes have visited
         self._canvas = [[' ' for y in range(self._y)] for x in range(self._x)]
-        self._pallete =[["default" for y in range(self._y)] for x in range(self._x)]
+
 
     # Returns True if the given point is outside the boundaries of the Canvas
     def hitsWall(self, point):
@@ -33,7 +33,7 @@ class Canvas:
     def print(self):
         self.clear()
         for y in range(self._y):
-            print(''.join([self._canvas[x][y] for x in range(self._x)]))
+            print(' '.join([self._canvas[x][y] for x in range(self._x)]))
 
     def dump(self):
         for col in self._pallete:
@@ -149,14 +149,15 @@ class TerminalScribe:
     def cfwd(self, complex, trail="."):
         polar=cmath.polar(complex)
         real = complex.real
-        imag= complex.imag
-        phi = polar[1]
+        imag = complex.imag
         r = polar[0]
-        pos = [self.pos[0]+int(real), self.pos[1]-int(imag)]
-        u = cmath.rect(1, phi)
-        for i in range(0, math.ceil(r)):
+        pos = [self.pos[0] + int(round(real, 0)), self.pos[1] - int(round(imag, 0))]
+        for i in range(0, int(round(r,0))):
+            phi = polar[1]
+            u = cmath.rect(1, phi)
             if not self.canvas.hitsWall(pos):
                 self.draw([self.pos[0] + int(round(u.real,0)), self.pos[1] - int(round(u.imag,0))], trail)
+            polar = cmath.polar(pos[0]-self.pos[0] - (pos[1] -self.pos[1])*1j)
 
 
 
@@ -167,12 +168,19 @@ canvas = Canvas(60, 22)
 scribe = TerminalScribe(canvas)
 
 # Move 1 down
-scribe.forward(270)
+scribe.forward(270, "'")
 # Move 3 down
-scribe.pfwd(3, 270)
+scribe.pfwd(3, 270, "+")
 # Move 3 right
-scribe.pfwd(3,0)
+scribe.pfwd(3,0,"~")
 #move 3 up and to the right
 scribe.pfwd(3, 45)
 #  move 2 right and 4 down
-scribe.cfwd(2.5-4j)
+scribe.cfwd(2-4j, "+")
+#move 1 left and 5 down
+scribe.cfwd(-1-5j,"-")
+
+#3 left and 2 up
+scribe.cfwd(-3+2j,"x")
+scribe.cfwd(-3+2j)
+scribe.pfwd(16,24,",")
