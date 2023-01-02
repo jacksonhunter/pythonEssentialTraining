@@ -166,7 +166,7 @@ class TerminalScribe:
 
     def takeInput(self):
         self.guess = ""
-        prompt=[self.jump([1, 20]), [self.right(i) for i in ("Pick up to " + str(5 - self.count) + " letter(s)!")]]
+        prompt=[self.jump([1, 20]), [self.right(i) for i in ("You have " + str(5 - self.count) + " guess(es) remaining!")]]
         while not self.guess.isalpha():
             self.guess = input()
             self.processInput()
