@@ -157,7 +157,6 @@ scribe.forward(-10, ".")
 scribe.forward(-20, ".")
 scribe.forward(-30, ".")
 scribe.forward(-35, "-")
-scribe.forward(-40, "-")
 scribe.forward(-60, "-")
 scribe.forward(-50, "+")
 #move down and right vector 3
