@@ -35,17 +35,13 @@ class Canvas:
         for y in range(self._y):
             print(' '.join([self._canvas[x][y] for x in range(self._x)]))
 
-    def dump(self):
-        for col in self._pallete:
-            print(col)
-
 class TerminalScribe:
     def __init__(self, canvas):
 
         self.pos = [0,0]
         self.canvas=canvas
         self.mark = "*"
-        self.framerate = 0.005
+        self.framerate = 0.2
 
     def jump(self, pos):
         self.canvas.setPos(self.pos, " ")
@@ -72,26 +68,6 @@ class TerminalScribe:
 
     def left(self, trail="."):
         pos = [self.pos[0]-1, self.pos[1]]
-        if not self.canvas.hitsWall(pos):
-            self.draw(pos, trail)
-
-    def dl(self, trail=".", firstTrail=""):
-        pos = [self.pos[0]-1, self.pos[1]+1]
-        if not self.canvas.hitsWall(pos):
-            self.draw(pos, trail)
-
-    def dr(self, trail=".", firstTrail=""):
-        pos = [self.pos[0]+1, self.pos[1]+1]
-        if not self.canvas.hitsWall(pos):
-            self.draw(pos, trail)
-
-    def ul(self, trail=".", firstTrail=""):
-        pos = [self.pos[0]-1, self.pos[1]-1]
-        if not self.canvas.hitsWall(pos):
-            self.draw(pos, trail)
-
-    def ur(self, trail=".", firstTrail=""):
-        pos = [self.pos[0]+1, self.pos[1]-1]
         if not self.canvas.hitsWall(pos):
             self.draw(pos, trail)
 
@@ -139,48 +115,82 @@ class TerminalScribe:
             self.up()
 
     def forward(self, phi, trail="."):
-        complex = cmath.rect(1, math.radians(phi) )
-        self.cfwd(complex, trail)
-
+        unit = cmath.rect(1, math.radians(phi) )
+        pos = [self.pos[0] + int(round(unit.real, 0)), self.pos[1] - int(round(unit.imag, 0))]
+        if not self.canvas.hitsWall(pos):
+            self.draw(pos, trail)
     def pfwd(self, r, phi, trail="."):
-        complex = cmath.rect(r, math.radians(phi))
-        self.cfwd(complex, trail)
+        complex=cmath.rect(r, math.radians(phi))
+        unit = cmath.rect(1, math.radians(phi) )
+        init = self.pos2c(self.pos)
+        points = [self.c2pos(init + i*unit) for i in range(0, r) ]
+        draw = [self.draw(i, trail) for i in points if not self.canvas.hitsWall(i)]
 
-    def cfwd(self, complex, trail="."):
+    def cfwd(self, complex, trail=".", n=0):
         polar=cmath.polar(complex)
-        real = complex.real
-        imag = complex.imag
-        r = polar[0]
-        pos = [self.pos[0] + int(round(real, 0)), self.pos[1] - int(round(imag, 0))]
-        for i in range(0, int(round(r,0))):
-            phi = polar[1]
-            u = cmath.rect(1, phi)
-            if not self.canvas.hitsWall(pos):
-                self.draw([self.pos[0] + int(round(u.real,0)), self.pos[1] - int(round(u.imag,0))], trail)
-            polar = cmath.polar(pos[0]-self.pos[0] - (pos[1] -self.pos[1])*1j)
-
+        self.pfwd(polar[0], math.degrees(polar[1]), trail)
+    def c2pos(self, complex):
+        return [int(round(complex.real,0)), int(round(-complex.imag, 0))]
+    def pos2c(self, pos=[0,0]):
+        return pos[0]-pos[1]*1j
+    def runForward(self, n, phi, trail="."):
+        unit = cmath.rect(1, math.radians(phi) )
+        init = self.pos2c(self.pos)
+        i=1
+        points = [self.pos]
+        while len(points) <= n:
+            p=self.c2pos(init + i*unit)
+            if not p in points:
+                points.append(p)
+            i+=1
+        draw = [self.draw(i, trail) for i in points if not self.canvas.hitsWall(i)]
+        print(len(points))
+        print(points)
 
 
 # Create a new Canvas instance that is 30 units wide by 30 units tall
-canvas = Canvas(60, 22)
+canvas = Canvas(60, 30)
 
 # Create a new scribe and give it the Canvas object
 scribe = TerminalScribe(canvas)
+#scribe.framerate=0.02
+# Move 1
+#scribe.forward(-10, ".")
+#scribe.forward(-20, ".")
+#scribe.forward(-30, ".")
+#scribe.forward(-35, "-")
+#scribe.forward(-40, "-")
+#scribe.forward(-60, "-")
+#i=[scribe.forward(-70, "-") for i in "......."]
+#scribe.runForward(10, -70)
+scribe.runForward(20, -24)
+scribe.runForward(7,45)
+scribe.pfwd(7, -45)
 
-# Move 1 down
-scribe.forward(270, "'")
+#scribe.forward(-50, "+")
+#move down and right vector 3
+#scribe.pfwd(3,315, "'")
+
 # Move 3 down
-scribe.pfwd(3, 270, "+")
+#scribe.pfwd(3, 270, "+")
 # Move 3 right
-scribe.pfwd(3,0,"~")
+#scribe.pfwd(3,0,"~")
 #move 3 up and to the right
-scribe.pfwd(3, 45)
+#scribe.pfwd(3, 45)
 #  move 2 right and 4 down
-scribe.cfwd(2-4j, "+")
+#scribe.cfwd(2-4j, "+")
 #move 1 left and 5 down
-scribe.cfwd(-1-5j,"-")
+#scribe.cfwd(-1-5j,"-")
 
 #3 left and 2 up
-scribe.cfwd(-3+2j,"x")
-scribe.cfwd(-3+2j)
-scribe.pfwd(16,24,",")
+#scribe.cfwd(-3+2j,"x")
+#4 down
+#scribe.cfwd(0-4j)
+# 3 left and 2 up
+#scribe.cfwd(-3+2j, "t")
+#16 at 24 degrees
+#scribe.pfwd(16,24, "c")
+#6 at 315
+#scribe.pfwd(27,315, "x")
+#scribe.forward(290)
+#scribe.pfwd(3, -70)
