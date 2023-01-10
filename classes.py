@@ -46,40 +46,6 @@ class Canvas:
             print(' '.join([self._canvas[x][y] for x in range(self._x)]))
 
 
-class Crystal(Canvas):
-    def __init__(self, width, height):
-        super().__init(width, height)
-
-        self.framerate = 0.02
-        self._t = 0
-        # self._crystal = [[[' ' for y in range(self._y)] for x in range(self._x)] for t in range(1000)]
-        self._crystal = numpy.full((500, self._x, self._y), " ")
-
-    def setPos(self, pos, mark):
-        if not self.hitsWall(pos):
-            self._canvas[pos[0]][pos[1]] = mark
-            self._crystal[self._t::, pos[0], pos[1]] = mark
-            # self._crystal[self._t][pos[0]][pos[1]] = mark
-            self._t += 1
-        # Clear the terminal (used to create animation)
-        super().setPos(self, pos, mark)
-
-        if not self.hitsWall(pos):
-            self._crystal[self._t::, pos[0], pos[1]] = mark
-            # self._crystal[self._t][pos[0]][pos[1]] = mark
-            self._t += 1
-
-    def animate(self):
-        for t in range(0, 500):
-            self.clear()
-            for y in range(self._y):
-                print(' '.join([self._crystal[t, x, y] for x in range(self._x)]))
-            time.sleep(self.framerate)
-
-    def resetCrystal(self):
-        self._t = 0
-
-
 class FloatingCanvas(Canvas):
     def __init__(self, width, height):
         super().__init__(width, height)
@@ -96,8 +62,6 @@ class FloatingCanvas(Canvas):
         if not self.hitsWall(pos):
             self._canvas[ipos[0]][ipos[1]] = mark
         # Clear the terminal (used to create animation)
-
-
 class TerminalScribe:
     def __init__(self, canvas):
 
@@ -150,13 +114,6 @@ class TerminalScribe:
         self.canvas.print()
         # Sleep for a little bit to create the animation
         time.sleep(self.framerate)
-
-    def c2v(self, c):
-        return numpy.asarray([c.real, c.imag])
-
-    def v2c(self, a):
-        return a[0] + a[1] * 1j
-
 
 class VectorScribe(TerminalScribe):
     def __int__(self):
@@ -311,6 +268,13 @@ class BounceScribe(VectorScribe):
         self.setPhi(math.degrees(cmath.polar(r)[1]))
         return (next)
 
+    def c2v(self, c):
+        return numpy.asarray([c.real, c.imag])
+
+    def v2c(self, a):
+        return a[0] + a[1] * 1j
+
+
 
 class RainbowScribe(BounceScribe):
     def __int__(self):
@@ -363,7 +327,7 @@ bounceScribe.setPhi(0)
 bounceScribe.runForward(7, "green")
 
 parseScribe = ParseScribe(canvas)
-parseScribe.parse("300abcdefghijklmno330pqrs0tuv30wxyzABCDEFG60HIJKLMN90OPQ30RSTUVWX0YZ330zyxwv" * 30)
+parseScribe.parse("300" + "abcdefghijklmno330pqrs0tuv30wxyzABCDEFG60HIJKLMN90OPQ150RSTUVWX0YZ180zyxwv" * 3)
 
 # funkScribe.jump([3, canvas._y-3])
 # funkScribe.forward("......")
