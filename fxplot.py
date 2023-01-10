@@ -2,6 +2,8 @@ import os
 import time
 import cmath
 import math
+from unicodedata import decimal
+
 from termcolor import colored
 import re
 import numpy
@@ -99,21 +101,21 @@ class TerminalScribe:
     def distance(self, posi, posf):
         return(int(round(math.dist(posi, posf))))
 
-    def draw(self, pos, trail='.', mark='*', framerate=0.2, color='red'):
+    def draw(self, pos, trail='.', mark='red', color='white'):
         self.trail = trail
 
         # Set the old position to the "trail" symbol
-        self.canvas.setPos(self.pos, self.trail)
+        self.canvas.setPos(self.pos, colored(self.trail, color))
         # Update position
         self.pos = pos
         # Set the new position to the "mark" symbol
-        self.canvas.setPos(self.pos, colored(self.mark, color))
+        self.canvas.setPos(self.pos, colored(self.mark, mark))
         # Print everything to the screen
         self.canvas.print()
         # Sleep for a little bit to create the animation
         time.sleep(self.framerate)
 
-    def forward(self, phi=None, trail=".", color = "red"):
+    def forward(self, phi=None, trail=".", color = "white", mark="red"):
         if type(phi) == str:
             trail = phi
             phi = None
@@ -129,7 +131,7 @@ class TerminalScribe:
             if not p in points:
                 points.append(p)
             i += 1
-        draw = [self.draw(points[i], trail[i], color=color) for i in range(0, len(trail)) if not self.canvas.hitsWall(points[i])]
+        draw = [self.draw(points[i], trail[i], color=color) for i in range(0, len(trail))]
 
     def cfwd(self, complex, trail="."):
         polar = cmath.polar(complex)
@@ -154,44 +156,81 @@ class TerminalScribe:
             phi = self.phi
         self.phi = phi
         self.forward(trail=trail * n)
-    def drawFunction(self, *args, Title="Title", xaxis="x-axis", yaxis="y:axis", xrange=None, yrange=None ):
+    def drawFunction(self, *args, title=None, xaxis="x-axis", yaxis="y axis", xrange=None, yrange=None ):
+        colors=["yellow", "magenta", "red", "green", "white"]*2
+        marks=["*",".","~"]
         self.framerate=0.001
+        xcanvas=list(range(self.canvas._x-6))
+        ycanvas=list(range(self.canvas._y-3))
         if xrange == None:
-            xrange=list(range(self.canvas._x-4))
+            xrange=xcanvas
         if yrange == None:
-            yrange=list(range(self.canvas._y-3))
-        domain = [[eval(arg) for x in xrange] for arg in args]
-        o = [3, self.canvas._y - 4]
-        ya = [self.jump([o[0]-1, o[1] + 1] ), self.forward(90, "L" + ("||||||||+" * 10)[:len(yrange)-1])]
-        xa = [self.jump([o[0], o[1] + 1] ), self.forward(0, ("_________|" * 10)[:len(xrange)-1])]
+            yrange=ycanvas
+        if title == None:
+            title=str("y = " + str(args))
+        xstep=len(xrange) / (len(xcanvas))
+        xdomain=[i*xstep for i in xcanvas]
+        yfactor=len(yrange)/len(ycanvas)
+        ydomain = [[eval(arg) for x in xdomain] for arg in args]
+        o = [4, self.canvas._y - 4]
+        ya = [self.jump([o[0]-1, o[1] + 1] ), self.forward(90, ("L||||||||+"+("||||||||+" * 10))[:len(ycanvas)-1])]
+        xa = [self.jump([o[0], o[1] + 1] ), self.forward(0, ("_________|" * 10)[:len(xcanvas)-1])]
 
-        ylabloc= [0, o[1] - int(len(yrange)/2 - len(yaxis)/2)]
-        xlabloc= [o[0] + int(len(xrange)/2 - len(xaxis)/2), o[1]+3]
+        yscaleloc = [[o[0]-2, o[1]+2]]
+        xscaleloc = [[o[0] - 1, o[1]+2]]
+
+        for i in range(10, self.canvas._y-3, 10):
+                base = yscaleloc[0]
+                yscaleloc.append([base[0], base[1] - i])
+        for i in range(10, self.canvas._x-6, 10):
+                base = xscaleloc[0]
+                xscaleloc.append([base[0]+ i, base[1]])
+        ys=[]
+        xs=[]
+        for i in yscaleloc:
+            self.jump(i)
+            y=len(yrange)/(self.canvas._y-3)*10*(yscaleloc.index(i))
+            y=f"{y:.0f}" if y>= 10 or y == 0else f"{y:.1f}" if y >= 1 else f"{y:.2f}"
+            ys.append(y)
+            self.forward(180, y[::-1])
+
+        for i in xscaleloc:
+            self.jump(i)
+            x=len(xrange)/(self.canvas._x-6)*10*(xscaleloc.index(i))
+            x=f"{x:.0f}" if x>= 10 or x == 0 else f"{x:.1f}" if x >= 1 else f"{x:.2f}"
+            xs.append(x)
+            self.forward(0, x)
+        self.jump([0, yscaleloc[0][1]])
+        self.forward(0, "("+xs[0]+", " + ys[0] +")")
+
+        ylabloc= [0, o[1] - int(len(ycanvas)/2 + len(yaxis)/2)]
+        xlabloc= [o[0] + int(len(xcanvas)/2 - len(xaxis)/2), o[1]+3]
 
         xlab=[self.jump(xlabloc), self.forward(0, xaxis)]
         ylab = [self.jump(ylabloc), self.forward(-90, yaxis)]
 
-        yscaleloc = [[o[0] - 3, o[1]-2]]
-        xscaleloc = [[o[0] - 2, o[1]]]
+        self.framerate=0.02
 
-        print(yscaleloc)
-        for i in range(10, self.canvas._y-3, 10):
-                base=yscaleloc[0]
-                yscaleloc.append([base[0], base[1] + i])
-        for i in range(10, self.canvas._x-4, 10):
-                xscaleloc.append([[0]+ i, o[1]])
-        for i in range(len(yscaleloc)):
-            self.jump(yscaleloc[i])
-            self.up(trail=yrange[i*int(round(len(yrange)/self.canvas._y-3),0)])
+        fx=[[self.canvas.setPos([o[0] + xrange[i], o[1] - int(round(y[i]/yfactor, 0))], colored(marks[ydomain.index(y)], colors[ydomain.index(y)]))  for y in ydomain] for i in xcanvas]
+        titlestart=[int(len(xcanvas) / 2 - len(title) / 2) + 6, 4]
+        #titlerange=[[i, 4] for i in range(titlestart, titlestart+len(title))]
 
-        fx=[self.jump(o), [[self.draw([o[0] + xrange[i], o[1] - int(round(domain[i], 0))]) for domain in domain] for i in xrange]]
+        if str(args) in title:
+            titlestart = [0, 4]#indexes = [title.find(str(i)) for i in args]
+            for i in args:
+                titlestart[0]=int(len(xcanvas) / 2 - len(str(i)) / 2) + 6
+                ttl = [self. jump(titlestart), self.forward(0, "y = " + str(i), color=colors[args.index(i)])]
+                titlestart[1] += 1
+        self.mark=" "
+        self.draw(self.pos, " ")
 
-        print(args)
+
 
 canvas = Canvas(60, 30)
 funkScribe = TerminalScribe(canvas)
 
-funkScribe.drawFunction("x","0.5*x")
+funkScribe.drawFunction("90*math.sin(math.radians(x))+90","x", xrange=list(range(0,360)), xaxis="degrees", yrange=list(range(0,200)))
+
 #funkScribe.jump([3, canvas._y-3])
 #funkScribe.forward("......")
 
