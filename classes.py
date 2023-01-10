@@ -83,11 +83,14 @@ class Crystal(Canvas):
 class FloatingCanvas(Canvas):
     def __init__(self, width, height):
         super().__init__(width, height)
-    def hitsWall(self, point):
 
-        normal = (1+1e-16j if point[0] < 0 else -1+1e-16j if point[0] >= self._x else 1e-16-1j if point[1] < 0 else 1e-16+1j if point[1] >= self._y else False)
+    def hitsWall(self, point):
+        normal = (1 + 1e-16j if point[0] < 0 else -1 + 1e-16j if point[0] >= self._x else 1e-16 - 1j if point[
+                                                                                                            1] < 0 else 1e-16 + 1j if
+        point[1] >= self._y else False)
 
         return normal
+
     def setPos(self, pos, mark):
         ipos = [int(round(i, 0)) for i in pos]
         if not self.hitsWall(pos):
@@ -279,9 +282,11 @@ class FunctionScribe(VectorScribe):
         self.mark = " "
         self.draw(self.pos, " ")
 
+
 class BounceScribe(VectorScribe):
     def __int__(self):
         super().__init__(canvas)
+
     def nextPoint(self):
 
         init = self.pos2c()
@@ -289,11 +294,12 @@ class BounceScribe(VectorScribe):
 
         while abs(round(delta.real, 0)) < 1 and abs(round(delta.imag, 0)) < 1:
             delta += self.unitVector()
-        next = init + delta #[(init + delta).real, -(init + delta).imag]
+        next = init + delta  # [(init + delta).real, -(init + delta).imag]
         bounceNormal = canvas.hitsWall(self.c2pos(next))
         if bounceNormal:
             next = self.bounce(bounceNormal, delta)
         return [next.real, -next.imag]
+
     def bounce(self, n, d=None):
         if d == None:
             d = self.unitVector()
@@ -303,10 +309,13 @@ class BounceScribe(VectorScribe):
         r = self.v2c(vr)
         next = self.pos2c() + d + r
         self.setPhi(math.degrees(cmath.polar(r)[1]))
-        return(next)
+        return (next)
+
+
 class RainbowScribe(BounceScribe):
     def __int__(self):
         super().__init__(canvas)
+
     def forward(self, phi=None, trail=".", colors=["red", "yellow", "green", "blue", "magenta"]):
         if type(phi) == str:
             trail = phi
@@ -315,7 +324,9 @@ class RainbowScribe(BounceScribe):
             phi = self.phi
         self.phi = phi
         marks = colors[::-1]
-        draw = [self.draw(self.nextPoint(), trail[i], color=(colors*len(trail))[i], mark=(marks*len(trail))[i]) for i in range(len(trail))]
+        draw = [self.draw(self.nextPoint(), trail[i], color=(colors * len(trail))[i], mark=(marks * len(trail))[i]) for
+                i in range(len(trail))]
+
     def runForward(self, n, phi=None, trail=".", colors=["red", "yellow", "green", "blue", "magenta"]):
         if type(phi) == str:
             trail = phi
@@ -324,6 +335,8 @@ class RainbowScribe(BounceScribe):
             phi = self.phi
         self.phi = phi
         self.forward(trail=(trail * n)[:n], colors=colors)
+
+
 class ParseScribe(RainbowScribe):
     def __int__(self):
         super().__init__(canvas)
@@ -334,6 +347,7 @@ class ParseScribe(RainbowScribe):
                 self.phi = float(i)
             else:
                 self.forward(trail=i)
+
 
 canvas = FloatingCanvas(60, 30)
 funkScribe = FunctionScribe(canvas)
@@ -349,7 +363,7 @@ bounceScribe.setPhi(0)
 bounceScribe.runForward(7, "green")
 
 parseScribe = ParseScribe(canvas)
-parseScribe.parse("300abcdefghijklmno330pqrs0tuv30wxyzABCDEFG60HIJKLMN90OPQ30RSTUVWX0YZ330zyxwv"*30)
+parseScribe.parse("300abcdefghijklmno330pqrs0tuv30wxyzABCDEFG60HIJKLMN90OPQ30RSTUVWX0YZ330zyxwv" * 30)
 
 # funkScribe.jump([3, canvas._y-3])
 # funkScribe.forward("......")
